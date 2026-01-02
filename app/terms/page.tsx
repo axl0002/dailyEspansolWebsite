@@ -10,7 +10,7 @@ export default function TermsOfService() {
                         ← Back to Home
                     </Link>
                     <h1 className="text-3xl sm:text-4xl font-bold text-primary tracking-tight">Terms of Service</h1>
-                    <p className="mt-2 text-foreground/60">Last updated: December 13, 2025</p>
+                    <p className="mt-2 text-foreground/60">Last updated: January 2, 2026</p>
                 </header>
 
                 <section className="space-y-4">
@@ -21,46 +21,60 @@ export default function TermsOfService() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-primary">2. Subscriptions</h2>
+                    <h2 className="text-xl font-semibold text-primary">2. Accounts</h2>
+                    <p>
+                        When you create an account with us, you must provide information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service. You are responsible for safeguarding the password or credentials that you use to access the Service and for any activities or actions under your account.
+                    </p>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-semibold text-primary">3. Subscriptions</h2>
                     <p>
                         Some parts of the Service are billed on a subscription basis (&quot;Subscription(s)&quot;). You will be billed in advance on a recurring and periodic basis (&quot;Billing Cycle&quot;). Billing cycles are set either on a monthly or annual basis, depending on the type of subscription plan you select when purchasing a Subscription.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-primary">3. Learning Progress</h2>
+                    <h2 className="text-xl font-semibold text-primary">4. Learning Progress</h2>
                     <p>
                         Our Service tracks your learning progress, including characters learned and quiz scores (&quot;Learning Data&quot;). This data is stored to provide you with a personalized learning experience. You acknowledge that this data is essential for the functionality of the Service.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-primary">4. Termination</h2>
+                    <h2 className="text-xl font-semibold text-primary">5. Device Features & Widgets</h2>
+                    <p>
+                        The Service includes features that integrate with your device&#39;s operating system, such as Home Screen and Lock Screen widgets. We make reasonable efforts to ensure these features work correctly; however, their performance relies on operating system background processes which are outside our control. We cannot guarantee that widgets will always update instantaneously or in the background.
+                    </p>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-semibold text-primary">6. Termination</h2>
                     <p>
                         We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-primary">5. Limit of Liability</h2>
+                    <h2 className="text-xl font-semibold text-primary">7. Limit of Liability</h2>
                     <p>
-                        In no event shall Daily Hanzi, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any conduct or content of any third party on the Service.
+                        In no event shall Daily Hanzi, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any conduct or content of any third party on the Service; (iii) any temporary data synchronization issues between your device and our servers.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-primary">6. Changes</h2>
+                    <h2 className="text-xl font-semibold text-primary">8. Changes</h2>
                     <p>
                         We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material we will try to provide at least 30 days notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-primary">7. Contact Us</h2>
+                    <h2 className="text-xl font-semibold text-primary">9. Contact Us</h2>
                     <p>
                         If you have any questions about these Terms, please contact us at:{" "}
-                        <a href="mailto:support@dailyhanzi.com" className="text-primary hover:text-primary/70 transition-colors">
-                            support@dailyhanzi.com
+                        <a href="mailto:support@dailyhanzi.app" className="text-primary hover:text-primary/70 transition-colors">
+                            support@dailyhanzi.app
                         </a>
                     </p>
                 </section>

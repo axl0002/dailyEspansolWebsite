@@ -10,7 +10,7 @@ export default function PrivacyPolicy() {
                         ← Back to Home
                     </Link>
                     <h1 className="text-3xl sm:text-4xl font-bold text-primary tracking-tight">Privacy Policy</h1>
-                    <p className="mt-2 text-foreground/60">Last updated: December 13, 2025</p>
+                    <p className="mt-2 text-foreground/60">Last updated: January 2, 2026</p>
                 </header>
 
                 <section className="space-y-4">
@@ -26,6 +26,9 @@ export default function PrivacyPolicy() {
                     <ul className="list-disc list-outside pl-5 space-y-2 marker:text-primary">
                         <li>
                             <strong className="text-primary">Personal Information:</strong> Name, email address, and other identifiers you provide when creating an account.
+                        </li>
+                        <li>
+                            <strong className="text-primary">Third-Party Authentication:</strong> If you sign in using Google or Apple, we collect your email address and basic profile information provided by these services to create and manage your account.
                         </li>
                         <li>
                             <strong className="text-primary">Usage Data:</strong> Information about your internet connection, the equipment you use to access our Services, and usage details.
@@ -44,6 +47,7 @@ export default function PrivacyPolicy() {
                         <li>To provide you with information, products, or services that you request from us.</li>
                         <li>To fulfill any other purpose for which you provide it.</li>
                         <li>To provide you with notices about your account.</li>
+                        <li>To update Home Screen and Lock Screen widgets with your daily characters and progress.</li>
                     </ul>
                 </section>
 
@@ -55,11 +59,25 @@ export default function PrivacyPolicy() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-primary">5. Contact Information</h2>
+                    <h2 className="text-xl font-semibold text-primary">5. Device Permissions & Widgets</h2>
+                    <p>
+                        Our mobile application may request specific permissions to function correctly, such as background fetch capabilities to update widgets. These updates ensure your Home Screen and Lock Screen widgets display the correct daily tokens and learning status. We do not access other private data on your device without explicit permission.
+                    </p>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-semibold text-primary">6. Data Deletion</h2>
+                    <p>
+                        You have the right to request the deletion of your account and all associated personal data. To exercise this right, please contact our support team at <a href="mailto:support@dailyhanzi.app" className="text-primary hover:text-primary/70 transition-colors">support@dailyhanzi.app</a>. We will process your request in accordance with applicable laws.
+                    </p>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-semibold text-primary">7. Contact Information</h2>
                     <p>
                         To ask questions or comment about this privacy policy and our privacy practices, contact us at:{" "}
-                        <a href="mailto:support@dailyhanzi.com" className="text-primary hover:text-primary/70 transition-colors">
-                            support@dailyhanzi.com
+                        <a href="mailto:support@dailyhanzi.app" className="text-primary hover:text-primary/70 transition-colors">
+                            support@dailyhanzi.app
                         </a>
                     </p>
                 </section>

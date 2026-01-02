@@ -2,12 +2,12 @@
 
 :root {
   /* Cream Light background */
-  --background: #F9F5E7; 
+  --background: #F9F5E7;
   /* Dark Mauve foreground for contrast */
   --foreground: #5D3A3F;
-  
-  /* Mauve - Primary */
-  --primary: #A7727D;
+
+  /* Terra Cotta Red - Primary */
+  --primary: #CD5E60;
   /* Beige - Secondary */
   --secondary: #EDDBC7;
   /* Cream Med - Accent/Surface */
