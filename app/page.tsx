@@ -1,4 +1,4 @@
-import { AppleStoreButton, GooglePlayButton } from "@/components/StoreButtons";
+import { WaitlistForm } from "@/components/WaitlistForm";
 
 export default function Home() {
   return (
@@ -55,10 +55,12 @@ export default function Home() {
           </p>
         </div>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-4">
-          <AppleStoreButton />
-          <GooglePlayButton />
+        {/* Waitlist Form */}
+        <div className="w-full pt-4">
+          <p className="text-sm text-foreground/60 pb-3">
+            Join the waitlist to be one of the first to try out the app.
+          </p>
+          <WaitlistForm />
         </div>
 
         {/* Feature Highlights (Micro) */}
