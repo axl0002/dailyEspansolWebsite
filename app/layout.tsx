@@ -8,18 +8,18 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Daily Hanzi - Learn Chinese Characters (Hanzi) on Lock Screen",
-  description: "The best app to learn Chinese characters (Hanzi) effortlessly. Master vocabulary with daily spaced repetition right on your phone's lock screen.",
-  keywords: ["Learn Chinese", "Chinese Characters", "Hanzi", "Lock Screen Learning", "Language App", "Spaced Repetition", "Daily Chinese"],
+  title: "Daily Hanzi - Learn Chinese Characters (Hanzi) on Your Lock Screen",
+  description: "Master Chinese characters (Hanzi) effortlessly with Daily Hanzi. The #1 lock screen learning app using spaced repetition for daily fluency.",
+  keywords: ["Learn Chinese", "Chinese Characters", "Hanzi", "Lock Screen Learning", "Language App", "Spaced Repetition", "Daily Chinese", "HSK", "Vocabulary"],
   openGraph: {
-    title: "Daily Hanzi - Learn Chinese on Lock Screen",
-    description: "Master Learning Chinese characters effortlessly with every unlock.",
+    title: "Daily Hanzi - Learn Chinese Characters on Your Lock Screen",
+    description: "Master Chinese characters (Hanzi) effortlessly with every unlock. The #1 lock screen learning app.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Daily Hanzi",
-    description: "Learn Chinese characters on your lock screen.",
+    title: "Daily Hanzi - Lock Screen Learning",
+    description: "Learn Chinese characters (Hanzi) effortlessly on your lock screen.",
   }
 };
 

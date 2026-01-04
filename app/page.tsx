@@ -1,13 +1,13 @@
 import { WaitlistForm } from "@/components/WaitlistForm";
+import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center py-20 px-4 sm:px-6 lg:px-8">
-      {/* Background Gradients */}
+    <div className="min-h-screen relative overflow-hidden flex flex-col bg-background selection:bg-primary/20">
+      {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-secondary/40 rounded-full blur-3xl opacity-50 animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent/40 rounded-full blur-3xl opacity-50 animate-pulse delay-1000" />
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-primary/20 rounded-full blur-3xl opacity-30" />
+        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[100px] opacity-40" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[100px] opacity-40" />
       </div>
 
       <script
@@ -19,7 +19,7 @@ export default function Home() {
             "name": "Daily Hanzi",
             "operatingSystem": "iOS, Android",
             "applicationCategory": "EducationalApplication",
-            "description": "Learn Chinese characters (Hanzi) effortlessly on your lock screen.",
+            "description": "Master Chinese characters (Hanzi) effortlessly on your lock screen with daily spaced repetition.",
             "offers": {
               "@type": "Offer",
               "price": "0",
@@ -29,70 +29,135 @@ export default function Home() {
         }}
       />
 
-      <main className="max-w-4xl w-full flex flex-col items-center text-center space-y-10 z-10">
-        {/* Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent border border-primary/20 backdrop-blur-md shadow-lg">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-          </span>
-          <span className="text-sm font-medium text-foreground tracking-wide">
-            The #1 Chinese Lock Screen Learning App
-          </span>
+      {/* Navbar */}
+      <nav className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-20">
+        <div className="relative w-80 h-24">
+          <Image
+            src="/logo-long.png"
+            alt="Daily Hanzi Logo"
+            fill
+            className="object-contain object-left"
+            priority
+          />
         </div>
-
-        {/* Headlines */}
-        <div className="space-y-6">
-          <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-primary drop-shadow-sm">
-            Master Learning Chinese <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-secondary">
-              Characters
-            </span>{" "}
-            (Hanzi)
-          </h1>
-          <p className="max-w-2xl mx-auto text-lg sm:text-xl text-foreground/80 leading-relaxed">
-            The effortless way to learn Hanzi. Your daily Chinese character learning app, integrated right into your lock screen.
-          </p>
+        {/* Placeholder for future links or auth buttons */}
+        <div className="hidden sm:flex gap-6 text-sm font-medium text-foreground/60">
+          {/* <a href="#" className="hover:text-primary transition-colors">How it works</a>
+            <a href="#" className="hover:text-primary transition-colors">Pricing</a> */}
         </div>
+      </nav>
 
-        {/* Waitlist Form */}
-        <div className="w-full pt-4">
-          <p className="text-sm text-foreground/60 pb-3">
-            Join the waitlist to be one of the first to try out the app.
-          </p>
-          <WaitlistForm />
-        </div>
+      <main className="flex-grow w-full max-w-7xl mx-auto px-6 flex flex-col sm:justify-center z-10 pb-20 pt-10 sm:pt-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+          {/* Left Column: Content */}
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-left space-y-8 max-w-xl mx-auto lg:mx-0">
 
-        {/* Feature Highlights (Micro) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-12 w-full text-foreground/70 text-sm">
-          <div className="flex flex-col items-center gap-2">
-            <div className="p-3 rounded-full bg-accent border border-primary/10 text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+            {/* Social Proof Pill (Mocked based on reference) */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent border border-primary/20 shadow-sm">
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 rounded-full bg-primary/20 border-2 border-accent" />
+                <div className="w-6 h-6 rounded-full bg-primary/30 border-2 border-accent" />
+                <div className="w-6 h-6 rounded-full bg-primary/40 border-2 border-accent" />
+              </div>
+              <div className="flex items-center gap-1 text-xs font-medium text-foreground/80 pl-1">
+                <span>#1 Chinese lock screen learning app</span>
+              </div>
             </div>
-            <span>Lock Screen Hanzi</span>
+
+            {/* Headlines */}
+            <div className="space-y-6">
+              <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+                Master Chinese Daily<br />
+                <span className="text-primary text-3xl sm:text-5xl block mt-2">
+                  from Your Lock Screen
+                </span>
+              </h1>
+              <p className="text-lg sm:text-lg text-foreground/60 leading-relaxed max-w-md">
+                Build a new daily habit of learning Chinese the easiest way possible. Seamlessly integrated directly into your lock screen.
+              </p>
+            </div>
+
+            {/* Waitlist Form */}
+            <div className="w-full pt-2">
+              <WaitlistForm />
+            </div>
+
+            {/* Feature Badges */}
+            <div className="flex gap-6 pt-4 grayscale opacity-60">
+              {/* Placeholder for trusted by logos if needed */}
+            </div>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <div className="p-3 rounded-full bg-accent border border-primary/10 text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M2 12h20" /></svg>
+
+          {/* Right Column: App Preview */}
+          <div className="relative w-full aspect-square max-w-[500px] mx-auto lg:max-w-none">
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* Main Phone */}
+              <div className="relative w-[55%] aspect-[9/19.5] z-10 transform -rotate-2 -translate-x-16 lg:-translate-x-32">
+                <Image
+                  src="/app-preview.png"
+                  alt="App Preview"
+                  fill
+                  className="object-cover rounded-[2.5rem] shadow-2xl border-4 border-gray-900/10 bg-white"
+                  priority
+                />
+              </div>
+              {/* Secondary Phone (Floating Right) */}
+              <div className="absolute w-[50%] aspect-[9/19.5] z-0 transform translate-x-16 lg:translate-x-32 translate-y-12 rotate-6 opacity-100">
+                <Image
+                  src="/app-preview-2.png"
+                  alt="App Preview Secondary"
+                  fill
+                  className="object-cover rounded-[2.5rem] shadow-xl border-4 border-gray-900/10 bg-white"
+                  priority
+                />
+              </div>
             </div>
-            <span>Smart Review System</span>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <div className="p-3 rounded-full bg-accent border border-primary/10 text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+        </div>
+
+        {/* Features Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-40 pb-8 w-full max-w-5xl mx-auto">
+          {/* Feature 1 */}
+          <div className="flex flex-col items-center text-center space-y-3">
+            <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
             </div>
-            <span>Track Your Fluency</span>
+            <div>
+              <h3 className="font-semibold text-foreground">Lock Screen Hanzi</h3>
+              <p className="text-sm text-foreground/60 mt-1">Learn effortlessly every time you pick up your phone.</p>
+            </div>
+          </div>
+
+          {/* Feature 2 */}
+          <div className="flex flex-col items-center text-center space-y-3">
+            <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M2 12h20" /></svg>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Smart Review</h3>
+              <p className="text-sm text-foreground/60 mt-1">Spaced repetition system ensures you never forget.</p>
+            </div>
+          </div>
+
+          {/* Feature 3 */}
+          <div className="flex flex-col items-center text-center space-y-3">
+            <div className="p-3.5 rounded-2xl bg-primary/5 text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Track Your Progress</h3>
+              <p className="text-sm text-foreground/60 mt-1">Visualize your fluency growth over time.</p>
+            </div>
           </div>
         </div>
       </main>
 
-
-      <footer className="w-full max-w-4xl mx-auto pt-16 pb-8 text-center sm:text-left z-10">
-        <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-foreground/60 gap-4">
-          <p>&copy; {new Date().getFullYear()} Daily Hanzi. All rights reserved.</p>
+      <footer className="w-full max-w-7xl mx-auto py-8 px-6 text-center sm:text-left z-10 border-t border-border/10 mt-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-foreground/40 gap-4">
+          <p>&copy; {new Date().getFullYear()} Daily Hanzi.</p>
           <div className="flex gap-6">
-            <a href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</a>
-            <a href="/terms" className="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="/privacy" className="hover:text-primary transition-colors">Privacy</a>
+            <a href="/terms" className="hover:text-primary transition-colors">Terms</a>
             <a href="/support" className="hover:text-primary transition-colors">Support</a>
           </div>
         </div>

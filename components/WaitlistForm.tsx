@@ -67,7 +67,10 @@ export function WaitlistForm() {
                 By joining, you agree to receive updates from us.
             </p>
             {message && (
-                <p className={`mt-3 text-sm ${status === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                <p
+                    className={`text-sm mt-4 text-center ${status === 'success' ? 'text-green-600' : 'text-red-500'
+                        }`}
+                >
                     {message}
                 </p>
             )}
