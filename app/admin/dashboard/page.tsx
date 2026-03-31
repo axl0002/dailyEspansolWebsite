@@ -12,6 +12,8 @@ import TimezoneChart from "../components/TimezoneChart";
 import CategoryChart from "../components/CategoryChart";
 import ProUserPercentageChart from "../components/ProUserPercentageChart";
 import ReferralByDayChart from "../components/ReferralByDayChart";
+import PlatformByDayChart from "../components/PlatformByDayChart";
+import PlatformChart from "../components/PlatformChart";
 import { useDateLabels } from "../components/useDateLabels";
 
 export default function AdminDashboard() {
@@ -94,6 +96,9 @@ export default function AdminDashboard() {
                     <ReferralByDayChart filter={filter} dateLabels={labels} onAddLabel={addLabel} onDeleteLabel={deleteLabel} />
                 </div>
                 <div className="col-span-1 md:col-span-2">
+                    <PlatformByDayChart filter={filter} dateLabels={labels} onAddLabel={addLabel} onDeleteLabel={deleteLabel} />
+                </div>
+                <div className="col-span-1 md:col-span-2">
                     <ProUserPercentageChart dateLabels={labels} onAddLabel={addLabel} onDeleteLabel={deleteLabel} />
                 </div>
                 <ReadingHoursChart filter={filter} />
@@ -102,6 +107,7 @@ export default function AdminDashboard() {
                 <ReferralChart filter={filter} />
                 <CategoryChart filter={filter} />
                 <TimezoneChart filter={filter} />
+                <PlatformChart filter={filter} />
             </div>
         </div>
     );
