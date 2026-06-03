@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-primary">1. Introduction</h2>
                     <p>
-                        Daily Hangul (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) respects your privacy and is committed to protecting it through our compliance with this policy. This policy describes the types of information we may collect from you or that you may provide when you visit the website or use our mobile application (collectively, &quot;Services&quot;) and our practices for collecting, using, maintaining, protecting, and disclosing that information.
+                        Daily Español (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) respects your privacy and is committed to protecting it through our compliance with this policy. This policy describes the types of information we may collect from you or that you may provide when you visit the website or use our mobile application (collectively, &quot;Services&quot;) and our practices for collecting, using, maintaining, protecting, and disclosing that information.
                     </p>
                 </section>
 
@@ -34,7 +34,7 @@ export default function PrivacyPolicy() {
                             <strong className="text-primary">Usage Data:</strong> Information about your internet connection, the equipment you use to access our Services, and usage details.
                         </li>
                         <li>
-                            <strong className="text-primary">Learning Data:</strong> Information about your learning progress, including characters studied, quiz results, and streak data. This data is used to personalize your learning experience and track your progress.
+                            <strong className="text-primary">Learning Data:</strong> Information about your learning progress, including words studied, quiz results, and streak data. This data is used to personalize your learning experience and track your progress.
                         </li>
                     </ul>
                 </section>
@@ -47,7 +47,7 @@ export default function PrivacyPolicy() {
                         <li>To provide you with information, products, or services that you request from us.</li>
                         <li>To fulfill any other purpose for which you provide it.</li>
                         <li>To provide you with notices about your account.</li>
-                        <li>To update Home Screen and Lock Screen widgets with your daily characters and progress.</li>
+                        <li>To update Home Screen and Lock Screen widgets with your daily words and progress.</li>
                     </ul>
                 </section>
 
@@ -68,7 +68,7 @@ export default function PrivacyPolicy() {
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-primary">6. Data Deletion</h2>
                     <p>
-                        You have the right to request the deletion of your account and all associated personal data. To exercise this right, please contact our support team at <a href="mailto:support@dailyhangul.app" className="text-primary hover:text-primary/70 transition-colors">support@dailyhangul.app</a>. We will process your request in accordance with applicable laws.
+                        You have the right to request the deletion of your account and all associated personal data. To exercise this right, please contact our support team at <a href="mailto:support@dailyespanol.app" className="text-primary hover:text-primary/70 transition-colors">support@dailyespanol.app</a>. We will process your request in accordance with applicable laws.
                     </p>
                 </section>
 
@@ -76,8 +76,8 @@ export default function PrivacyPolicy() {
                     <h2 className="text-xl font-semibold text-primary">7. Contact Information</h2>
                     <p>
                         To ask questions or comment about this privacy policy and our privacy practices, contact us at:{" "}
-                        <a href="mailto:support@dailyhangul.app" className="text-primary hover:text-primary/70 transition-colors">
-                            support@dailyhangul.app
+                        <a href="mailto:support@dailyespanol.app" className="text-primary hover:text-primary/70 transition-colors">
+                            support@dailyespanol.app
                         </a>
                     </p>
                 </section>

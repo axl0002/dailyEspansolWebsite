@@ -16,10 +16,10 @@ export default function Home() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "MobileApplication",
-            "name": "Daily Hangul",
+            "name": "Daily Español",
             "operatingSystem": "iOS, Android",
             "applicationCategory": "EducationalApplication",
-            "description": "Master Korean characters (Hangul) effortlessly on your lock screen with daily spaced repetition.",
+            "description": "Master Spanish vocabulary effortlessly on your lock screen with daily spaced repetition.",
             "offers": {
               "@type": "Offer",
               "price": "0",
@@ -34,7 +34,7 @@ export default function Home() {
         <div className="relative w-80 h-24">
           <Image
             src="/logo-long.png"
-            alt="Daily Hangul Logo"
+            alt="Daily Español Logo"
             fill
             className="object-contain object-left"
             priority
@@ -60,20 +60,20 @@ export default function Home() {
                 <div className="w-6 h-6 rounded-full bg-primary/40 border-2 border-accent" />
               </div>
               <div className="flex items-center gap-1 text-xs font-medium text-foreground/80 pl-1">
-                <span>#1 Korean lock screen learning app</span>
+                <span>#1 Spanish lock screen learning app</span>
               </div>
             </div>
 
             {/* Headlines */}
             <div className="space-y-6">
               <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-                Master Korean Daily<br />
+                Master Spanish Daily<br />
                 <span className="text-primary text-3xl sm:text-5xl block mt-2">
                   from Your Lock Screen
                 </span>
               </h1>
               <p className="text-lg sm:text-lg text-foreground/60 leading-relaxed max-w-md">
-                Build a new daily habit of learning Korean the easiest way possible. Seamlessly integrated directly into your lock screen.
+                Build a new daily habit of learning Spanish the easiest way possible. Seamlessly integrated directly into your lock screen.
               </p>
             </div>
 
@@ -234,7 +234,7 @@ export default function Home() {
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Lock Screen Hangul</h3>
+              <h3 className="font-semibold text-foreground">Lock Screen Spanish</h3>
               <p className="text-sm text-foreground/60 mt-1">Learn effortlessly every time you pick up your phone.</p>
             </div>
           </div>
@@ -265,7 +265,7 @@ export default function Home() {
 
       <footer className="w-full max-w-7xl mx-auto py-8 px-6 text-center sm:text-left z-10 border-t border-border/10 mt-auto">
         <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-foreground/40 gap-4">
-          <p>&copy; {new Date().getFullYear()} Daily Hangul.</p>
+          <p>&copy; {new Date().getFullYear()} Daily Español.</p>
           <div className="flex gap-6">
             <a href="/privacy" className="hover:text-primary transition-colors">Privacy</a>
             <a href="/terms" className="hover:text-primary transition-colors">Terms</a>

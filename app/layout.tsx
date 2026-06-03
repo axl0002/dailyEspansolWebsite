@@ -8,18 +8,18 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Daily Hangul - Learn Korean Characters (Hangul) on Your Lock Screen",
-  description: "Master Korean characters (Hangul) effortlessly with Daily Hangul. The #1 lock screen learning app using spaced repetition for daily fluency.",
-  keywords: ["Learn Korean", "Korean Characters", "Hangul", "Lock Screen Learning", "Language App", "Spaced Repetition", "Daily Korean", "TOPIK", "Vocabulary"],
+  title: "Daily Español - Learn Spanish on Your Lock Screen",
+  description: "Master Spanish vocabulary effortlessly with Daily Español. The #1 lock screen learning app using spaced repetition for daily fluency.",
+  keywords: ["Learn Spanish", "Spanish Vocabulary", "Español", "Lock Screen Learning", "Language App", "Spaced Repetition", "Daily Spanish", "DELE", "Vocabulary"],
   openGraph: {
-    title: "Daily Hangul - Learn Korean Characters on Your Lock Screen",
-    description: "Master Korean characters (Hangul) effortlessly with every unlock. The #1 lock screen learning app.",
+    title: "Daily Español - Learn Spanish on Your Lock Screen",
+    description: "Master Spanish vocabulary effortlessly with every unlock. The #1 lock screen learning app.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Daily Hangul - Lock Screen Learning",
-    description: "Learn Korean characters (Hangul) effortlessly on your lock screen.",
+    title: "Daily Español - Lock Screen Learning",
+    description: "Learn Spanish vocabulary effortlessly on your lock screen.",
   }
 };
 

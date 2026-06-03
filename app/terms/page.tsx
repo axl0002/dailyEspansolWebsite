@@ -16,7 +16,7 @@ export default function TermsOfService() {
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-primary">1. Acceptance of Terms</h2>
                     <p>
-                        By accessing or using the Daily Hangul mobile application and website (&quot;Service&quot;), you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the Service.
+                        By accessing or using the Daily Español mobile application and website (&quot;Service&quot;), you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the Service.
                     </p>
                 </section>
 
@@ -37,7 +37,7 @@ export default function TermsOfService() {
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-primary">4. Learning Progress</h2>
                     <p>
-                        Our Service tracks your learning progress, including characters learned and quiz scores (&quot;Learning Data&quot;). This data is stored to provide you with a personalized learning experience. You acknowledge that this data is essential for the functionality of the Service.
+                        Our Service tracks your learning progress, including words learned and quiz scores (&quot;Learning Data&quot;). This data is stored to provide you with a personalized learning experience. You acknowledge that this data is essential for the functionality of the Service.
                     </p>
                 </section>
 
@@ -58,7 +58,7 @@ export default function TermsOfService() {
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-primary">7. Limit of Liability</h2>
                     <p>
-                        In no event shall Daily Hangul, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any conduct or content of any third party on the Service; (iii) any temporary data synchronization issues between your device and our servers.
+                        In no event shall Daily Español, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from (i) your access to or use of or inability to access or use the Service; (ii) any conduct or content of any third party on the Service; (iii) any temporary data synchronization issues between your device and our servers.
                     </p>
                 </section>
 
@@ -73,8 +73,8 @@ export default function TermsOfService() {
                     <h2 className="text-xl font-semibold text-primary">9. Contact Us</h2>
                     <p>
                         If you have any questions about these Terms, please contact us at:{" "}
-                        <a href="mailto:support@dailyhangul.app" className="text-primary hover:text-primary/70 transition-colors">
-                            support@dailyhangul.app
+                        <a href="mailto:support@dailyespanol.app" className="text-primary hover:text-primary/70 transition-colors">
+                            support@dailyespanol.app
                         </a>
                     </p>
                 </section>

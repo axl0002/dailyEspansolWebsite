@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* Light background */
-  --background: #F0F4FA;
-  /* Dark foreground for contrast */
-  --foreground: #0D1B2E;
+  /* Warm light background */
+  --background: #FBF5F0;
+  /* Dark warm foreground for contrast */
+  --foreground: #2B1A0F;
 
-  /* Blue - Primary */
-  --primary: #154693;
-  /* Light Blue - Secondary */
-  --secondary: #C7D6EE;
-  /* Very Light Blue - Accent/Surface */
-  --accent: #E8EFF9;
+  /* Orange - Primary */
+  --primary: #E57134;
+  /* Light Orange - Secondary */
+  --secondary: #F5D2BB;
+  /* Very Light Orange - Accent/Surface */
+  --accent: #FCEADD;
 }
 
 @theme inline {
