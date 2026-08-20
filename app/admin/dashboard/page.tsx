@@ -5,16 +5,23 @@ import { supabase } from '@/lib/supabase';
 
 import ReferralChart from "../components/ReferralChart";
 import UserGrowthChart from "../components/UserGrowthChart";
+import HourlyGrowthChart from "../components/HourlyGrowthChart";
+import HourlyCancellationChart from "../components/HourlyCancellationChart";
+import CancellationByDayChart from "../components/CancellationByDayChart";
 import ReadingHoursChart from "../components/ReadingHoursChart";
 import TopikLevelChart from "../components/TopikLevelChart";
 import ReasonChart from "../components/ReasonChart";
 import TimezoneChart from "../components/TimezoneChart";
+import ContinentChart from "../components/ContinentChart";
+import CountryChart from "../components/CountryChart";
 import CategoryChart from "../components/CategoryChart";
 import ProUserPercentageChart from "../components/ProUserPercentageChart";
 import ReferralByDayChart from "../components/ReferralByDayChart";
 import PlatformByDayChart from "../components/PlatformByDayChart";
 import PlatformChart from "../components/PlatformChart";
 import TimezoneByDayChart from "../components/TimezoneByDayChart";
+import TrialCancellationChart from "../components/TrialCancellationChart";
+import TrialCancellationRateOverTimeChart from "../components/TrialCancellationRateOverTimeChart";
 import { useDateLabels } from "../components/useDateLabels";
 
 export default function AdminDashboard() {
@@ -94,6 +101,9 @@ export default function AdminDashboard() {
                     <UserGrowthChart filter={filter} dateLabels={labels} onAddLabel={addLabel} onDeleteLabel={deleteLabel} />
                 </div>
                 <div className="col-span-1 md:col-span-2">
+                    <CancellationByDayChart dateLabels={labels} onAddLabel={addLabel} onDeleteLabel={deleteLabel} />
+                </div>
+                <div className="col-span-1 md:col-span-2">
                     <ReferralByDayChart filter={filter} dateLabels={labels} onAddLabel={addLabel} onDeleteLabel={deleteLabel} />
                 </div>
                 <div className="col-span-1 md:col-span-2">
@@ -105,11 +115,25 @@ export default function AdminDashboard() {
                 <div className="col-span-1 md:col-span-2">
                     <ProUserPercentageChart dateLabels={labels} onAddLabel={addLabel} onDeleteLabel={deleteLabel} />
                 </div>
+                <div className="col-span-1 md:col-span-2">
+                    <HourlyGrowthChart filter={filter} />
+                </div>
+                <div className="col-span-1 md:col-span-2">
+                    <HourlyCancellationChart />
+                </div>
+                <div className="col-span-1 md:col-span-2">
+                    <TrialCancellationRateOverTimeChart dateLabels={labels} onAddLabel={addLabel} onDeleteLabel={deleteLabel} />
+                </div>
+                <div className="col-span-1 md:col-span-2">
+                    <TrialCancellationChart />
+                </div>
                 <ReadingHoursChart filter={filter} />
                 <TopikLevelChart filter={filter} />
                 <ReasonChart filter={filter} />
                 <ReferralChart filter={filter} />
                 <CategoryChart filter={filter} />
+                <ContinentChart filter={filter} />
+                <CountryChart filter={filter} />
                 <TimezoneChart filter={filter} />
                 <PlatformChart filter={filter} />
             </div>

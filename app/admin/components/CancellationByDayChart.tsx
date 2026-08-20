@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { supabase } from '@/lib/supabase';
 import DateLabelModal from './DateLabelModal';
 import ClickableXAxisTick from './ClickableXAxisTick';
@@ -10,9 +10,18 @@ import { DateLabel } from './useDateLabels';
 
 type ChartData = {
     date: string;
-    percentage: number;
-    pro: number;
+    trial3d: number;
+    trial7d: number;
     total: number;
+};
+
+type SupabaseRow = {
+    product_id: string | null;
+    event_timestamp: string;
+    raw: {
+        expiration_at_ms?: number;
+        purchased_at_ms?: number;
+    } | null;
 };
 
 type Props = {
@@ -27,26 +36,42 @@ function formatDateLabel(dateStr: string): string {
     return `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
 }
 
-export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDeleteLabel }: Props) {
+function trialLengthDays(row: SupabaseRow): 3 | 7 | null {
+    const pid = row.product_id || '';
+    if (pid.endsWith('_3d')) return 3;
+    if (pid.endsWith('_7d')) return 7;
+    const ets = row.raw?.expiration_at_ms;
+    const pts = row.raw?.purchased_at_ms;
+    if (ets && pts) {
+        const days = (ets - pts) / 86400000;
+        if (Math.abs(days - 3) < 0.1) return 3;
+        if (Math.abs(days - 7) < 0.1) return 7;
+    }
+    return null;
+}
+
+export default function CancellationByDayChart({ dateLabels, onAddLabel, onDeleteLabel }: Props) {
     const [data, setData] = useState<ChartData[]>([]);
     const [loading, setLoading] = useState(true);
-    const [debugInfo, setDebugInfo] = useState({ fetched: 0, totalInPeriod: 0 });
+    const [debugInfo, setDebugInfo] = useState({ fetched: 0, displayed: 0, totalInPeriod: 0 });
     const [days, setDays] = useState<14 | 30 | 60 | 90>(14);
     const [pageOffset, setPageOffset] = useState(0);
     const [earliestDate, setEarliestDate] = useState<string | null>(null);
     const [labelModal, setLabelModal] = useState<{ date: string; position: { x: number; y: number } } | null>(null);
 
-    // Fetch earliest profile date once on mount
+    // Fetch earliest trial cancellation date once on mount
     useEffect(() => {
         const fetchEarliest = async () => {
             const { data } = await supabase
-                .from('profiles')
-                .select('created_at')
-                .eq('is_beta', false)
-                .order('created_at', { ascending: true })
+                .from('subscription_events')
+                .select('event_timestamp')
+                .eq('event_type', 'CANCELLATION')
+                .eq('period_type', 'TRIAL')
+                .eq('cancel_reason', 'UNSUBSCRIBE')
+                .order('event_timestamp', { ascending: true })
                 .limit(1);
             if (data && data.length > 0) {
-                setEarliestDate(data[0].created_at.split('T')[0]);
+                setEarliestDate(data[0].event_timestamp.split('T')[0]);
             }
         };
         fetchEarliest();
@@ -80,16 +105,13 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
 
             const { startDate, endDate } = getDateWindow();
 
-            // Only fetch profiles within the visible window (padded ±1 day to cover the
-            // local/UTC date-bucketing boundary). Keeps each query bounded to the window
-            // instead of scanning the whole table as the userbase grows.
+            // Pad ±1 day to cover the local/UTC date-bucketing boundary.
             const queryStart = new Date(startDate);
             queryStart.setDate(queryStart.getDate() - 1);
             const queryEnd = new Date(endDate);
             queryEnd.setDate(queryEnd.getDate() + 1);
 
-            // Fetch profiles within the window with pagination
-            let allProfiles: { created_at: string; is_pro: boolean | null }[] = [];
+            let allRows: SupabaseRow[] = [];
             let page = 0;
             const pageSize = 1000;
             let hasMore = true;
@@ -98,26 +120,26 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
                 const from = page * pageSize;
                 const to = from + pageSize - 1;
 
-                const query = supabase
-                    .from('profiles')
-                    .select('created_at, is_pro')
-                    .eq('is_beta', false)
-                    .gte('created_at', queryStart.toISOString())
-                    .lte('created_at', queryEnd.toISOString())
-                    .order('created_at', { ascending: true })
+                const { data: batch, error } = await supabase
+                    .from('subscription_events')
+                    .select('product_id, event_timestamp, raw')
+                    .eq('event_type', 'CANCELLATION')
+                    .eq('period_type', 'TRIAL')
+                    .eq('cancel_reason', 'UNSUBSCRIBE')
+                    .gte('event_timestamp', queryStart.toISOString())
+                    .lte('event_timestamp', queryEnd.toISOString())
+                    .order('event_timestamp', { ascending: true })
                     .order('id', { ascending: true })
                     .range(from, to);
 
-                const { data: batch, error } = await query;
-
                 if (error) {
-                    console.error('Error fetching profiles:', error);
+                    console.error('Error fetching cancellations:', error);
                     setLoading(false);
                     return;
                 }
 
                 if (batch && batch.length > 0) {
-                    allProfiles = [...allProfiles, ...batch];
+                    allRows = [...allRows, ...(batch as SupabaseRow[])];
                     if (batch.length < pageSize) {
                         hasMore = false;
                     }
@@ -127,55 +149,50 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
 
                 page++;
 
-                if (allProfiles.length > 50000) {
-                    console.warn('Reached safety limit of 50k profiles');
+                if (allRows.length > 50000) {
+                    console.warn('Reached safety limit of 50k cancellations');
                     hasMore = false;
                 }
             }
 
-            const profiles = allProfiles;
+            const dailyStats: Record<string, { trial3d: number; trial7d: number }> = {};
 
-            // Process data - count pro and total signups per day
-            const dailyStats: Record<string, { pro: number; total: number }> = {};
-
-            // Initialize buckets for the date window
             for (let i = 0; i < days; i++) {
                 const d = new Date(endDate);
                 d.setDate(d.getDate() - i);
                 const dateString = d.toISOString().split('T')[0];
-                dailyStats[dateString] = { pro: 0, total: 0 };
+                dailyStats[dateString] = { trial3d: 0, trial7d: 0 };
             }
 
             let inPeriodCount = 0;
 
-            profiles?.forEach((profile) => {
-                if (!profile.created_at) return;
-
-                const profileDate = new Date(profile.created_at);
-                const dateString = profileDate.toISOString().split('T')[0];
-
-                if (dailyStats[dateString]) {
-                    dailyStats[dateString].total++;
-                    if (profile.is_pro) {
-                        dailyStats[dateString].pro++;
-                    }
+            allRows.forEach((row) => {
+                if (!row.event_timestamp) return;
+                const dateString = new Date(row.event_timestamp).toISOString().split('T')[0];
+                if (!dailyStats[dateString]) return;
+                const len = trialLengthDays(row);
+                if (len === 3) {
+                    dailyStats[dateString].trial3d++;
+                    inPeriodCount++;
+                } else if (len === 7) {
+                    dailyStats[dateString].trial7d++;
                     inPeriodCount++;
                 }
             });
 
-            // Convert to array and sort by date
             const chartData = Object.entries(dailyStats)
                 .map(([date, stats]) => ({
                     date,
-                    percentage: stats.total > 0 ? Math.round((stats.pro / stats.total) * 1000) / 10 : 0,
-                    pro: stats.pro,
-                    total: stats.total,
+                    trial3d: stats.trial3d,
+                    trial7d: stats.trial7d,
+                    total: stats.trial3d + stats.trial7d,
                 }))
                 .sort((a, b) => a.date.localeCompare(b.date));
 
             setData(chartData);
             setDebugInfo({
-                fetched: profiles?.length || 0,
+                fetched: allRows.length,
+                displayed: chartData.length,
                 totalInPeriod: inPeriodCount,
             });
             setLoading(false);
@@ -184,16 +201,19 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
         fetchData();
     }, [days, pageOffset, getDateWindow]);
 
-    // Date range label for display
     const { startDate, endDate } = getDateWindow();
     const startLabel = formatDateLabel(startDate.toISOString().split('T')[0]);
     const endLabel = formatDateLabel(endDate.toISOString().split('T')[0]);
 
-    // 7 days ago reference line
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
     const showSevenDayLine = data.some(d => d.date === sevenDaysAgoStr);
+
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    const threeDaysAgoStr = threeDaysAgo.toISOString().split('T')[0];
+    const showThreeDayLine = data.some(d => d.date === threeDaysAgoStr);
 
     const rawLabels = data
         .filter(d => dateLabels[d.date]?.length > 0)
@@ -215,7 +235,7 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
     if (loading) return (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col h-[460px]">
             <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
-                <h3 className="text-lg font-bold text-gray-900">% Through Paywall</h3>
+                <h3 className="text-lg font-bold text-gray-900">User Cancellations</h3>
                 <div className="flex items-center gap-2">
                     <button disabled className="p-1.5 rounded-md text-gray-300 border border-gray-100">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -241,7 +261,7 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 col-span-1 md:col-span-2">
             <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
                 <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-bold text-gray-900">% Through Paywall</h3>
+                    <h3 className="text-lg font-bold text-gray-900">User Cancellations</h3>
                     <span className="text-sm text-gray-500">{startLabel} – {endLabel}</span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -290,13 +310,13 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
                         </button>
                     </div>
                     <span className="text-xs text-gray-400">
-                        {debugInfo.totalInPeriod} signups in period ({debugInfo.fetched} total scanned)
+                        {debugInfo.totalInPeriod} trial cancellations in period ({debugInfo.fetched} total scanned)
                     </span>
                 </div>
             </div>
             <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
+                    <BarChart
                         data={data}
                         margin={{ top: chartTopMargin, right: 30, left: 20, bottom: 5 }}
                     >
@@ -313,11 +333,10 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
                             tick={{ fontSize: 12, fill: '#6B7280' }}
                             tickLine={false}
                             axisLine={false}
-                            domain={[0, 100]}
-                            tickFormatter={(value) => `${value}%`}
+                            allowDecimals={false}
                         />
                         <Tooltip
-                            cursor={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                            cursor={{ fill: '#F9FAFB' }}
                             content={({ active, payload, label }) => {
                                 if (active && payload && payload.length) {
                                     let formattedLabel = label;
@@ -328,7 +347,6 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
                                         }
                                     }
 
-                                    const entry = payload[0]?.payload as ChartData;
                                     const dateLabelList = typeof label === 'string' ? dateLabels[label] : undefined;
 
                                     return (
@@ -339,21 +357,30 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
                                                     <span>&#9873;</span> {dl.label}
                                                 </p>
                                             ))}
-                                            <div className="flex items-center justify-between gap-4 mb-1">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                                                    <span className="text-sm font-medium text-indigo-600">Pro %</span>
-                                                </div>
-                                                <span className="text-sm font-bold text-indigo-600">
-                                                    {entry.percentage}%
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center justify-between gap-4">
-                                                <span className="text-xs text-gray-500">Pro / Total</span>
-                                                <span className="text-xs text-gray-500">
-                                                    {entry.pro} / {entry.total}
-                                                </span>
-                                            </div>
+                                            {payload.map((entry, index) => {
+                                                const is7d = entry.name === '7-day trial';
+                                                const colorClass = is7d ? 'text-indigo-600' : 'text-purple-500';
+                                                const value = entry.value as number;
+                                                const total = (entry.payload as { total: number }).total;
+                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+
+                                                return (
+                                                    <div key={index} className="flex items-center justify-between gap-4 mb-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <div
+                                                                className="w-2 h-2 rounded-full"
+                                                                style={{ backgroundColor: entry.color }}
+                                                            />
+                                                            <span className={`text-sm font-medium ${colorClass}`}>
+                                                                {entry.name}
+                                                            </span>
+                                                        </div>
+                                                        <span className={`text-sm font-bold ${colorClass}`}>
+                                                            {value} ({percentage}%)
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     );
                                 }
@@ -368,6 +395,14 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
                                 label={{ value: '7d ago', position: 'top', fill: '#9CA3AF', fontSize: 11 }}
                             />
                         )}
+                        {showThreeDayLine && (
+                            <ReferenceLine
+                                x={threeDaysAgoStr}
+                                stroke="#9CA3AF"
+                                strokeDasharray="4 4"
+                                label={{ value: '3d ago', position: 'top', fill: '#9CA3AF', fontSize: 11 }}
+                            />
+                        )}
                         {visibleLabels.map(({ date, labels: lbls, row }) => (
                             <ReferenceLine
                                 key={date}
@@ -378,17 +413,10 @@ export default function ProUserPercentageChart({ dateLabels, onAddLabel, onDelet
                                 label={<StackedReferenceLabel labels={lbls} rowOffset={row} />}
                             />
                         ))}
-                        <Area
-                            type="monotone"
-                            dataKey="percentage"
-                            name="Pro %"
-                            stroke="#6366F1"
-                            strokeWidth={2}
-                            fill="#EEF2FF"
-                            dot={{ r: 3, fill: '#6366F1', strokeWidth: 0 }}
-                            activeDot={{ r: 5, fill: '#6366F1', strokeWidth: 2, stroke: '#fff' }}
-                        />
-                    </AreaChart>
+                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                        <Bar dataKey="trial7d" name="7-day trial" stackId="cancels" fill="#6366F1" radius={[0, 0, 4, 4]} />
+                        <Bar dataKey="trial3d" name="3-day trial" stackId="cancels" fill="#C4B5FD" radius={[4, 4, 0, 0]} />
+                    </BarChart>
                 </ResponsiveContainer>
             </div>
             {labelModal && (

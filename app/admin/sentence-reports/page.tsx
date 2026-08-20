@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import CharacterEditModal, { Character } from "../components/CharacterEditModal";
 
@@ -15,6 +15,7 @@ type SentenceReport = {
     issue_type: string;
     characters: {
         meaning: string | null;
+        romanization: string | null;
         category: string | null;
     } | null;
 };
@@ -22,8 +23,14 @@ type SentenceReport = {
 type SortField = keyof SentenceReport;
 type SortOrder = 'asc' | 'desc';
 
+type ReportingUser = {
+    email: string | null;
+    timezone: string | null;
+};
+
 export default function SentenceReportsPage() {
     const [reports, setReports] = useState<SentenceReport[]>([]);
+    const [usersById, setUsersById] = useState<Record<string, ReportingUser>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +40,7 @@ export default function SentenceReportsPage() {
 
     // Column Visibility
     const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
-        user_id: false,
+        user: false,
         word: true,
         category: true,
         sentence: true,
@@ -46,12 +53,18 @@ export default function SentenceReportsPage() {
     const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
     const [showModal, setShowModal] = useState(false);
 
+    // Audio playback
+    const [audioByKorean, setAudioByKorean] = useState<Record<string, string | null>>({});
+    const [romanizationByKorean, setRomanizationByKorean] = useState<Record<string, string | null>>({});
+    const [playingReportId, setPlayingReportId] = useState<string | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
     const fetchReports = useCallback(async () => {
         setLoading(true);
         try {
             let query = supabase
                 .from("sentence_reports")
-                .select("*, characters(meaning, category)");
+                .select("*, characters(meaning, romanization, category)");
 
             if (sortField) {
                 query = query.order(sortField, { ascending: sortOrder === 'asc' });
@@ -63,7 +76,64 @@ export default function SentenceReportsPage() {
 
             if (error) throw error;
 
-            setReports(data || []);
+            const loadedReports = data || [];
+            setReports(loadedReports);
+
+            const uniqueKorean = Array.from(
+                new Set(
+                    loadedReports
+                        .map((r: SentenceReport) => r.sentence_korean)
+                        .filter((s: string | null | undefined): s is string => !!s)
+                )
+            );
+
+            if (uniqueKorean.length > 0) {
+                const { data: sentenceData, error: sentenceError } = await supabase
+                    .from("example_sentences")
+                    .select("korean, romanization, audio_url")
+                    .in("korean", uniqueKorean);
+
+                if (sentenceError) throw sentenceError;
+
+                const audioMap: Record<string, string | null> = {};
+                const romanMap: Record<string, string | null> = {};
+                for (const s of sentenceData || []) {
+                    if (s.korean) {
+                        audioMap[s.korean] = s.audio_url ?? null;
+                        romanMap[s.korean] = s.romanization ?? null;
+                    }
+                }
+                setAudioByKorean(audioMap);
+                setRomanizationByKorean(romanMap);
+            } else {
+                setAudioByKorean({});
+                setRomanizationByKorean({});
+            }
+
+            const userIds = Array.from(
+                new Set(
+                    loadedReports
+                        .map((r: SentenceReport) => r.user_id)
+                        .filter((id: string | null | undefined): id is string => !!id)
+                )
+            );
+
+            if (userIds.length > 0) {
+                const { data: profileData, error: profileError } = await supabase
+                    .from("profiles")
+                    .select("id, email, timezone")
+                    .in("id", userIds);
+
+                if (profileError) throw profileError;
+
+                const userMap: Record<string, ReportingUser> = {};
+                for (const p of profileData || []) {
+                    userMap[p.id] = { email: p.email ?? null, timezone: p.timezone ?? null };
+                }
+                setUsersById(userMap);
+            } else {
+                setUsersById({});
+            }
         } catch (err: unknown) {
             console.error("sentence_reports fetch failed:", err);
             const message =
@@ -77,6 +147,36 @@ export default function SentenceReportsPage() {
             setLoading(false);
         }
     }, [sortField, sortOrder]);
+
+    const handlePlayAudio = (reportId: string, audioUrl: string | null | undefined) => {
+        if (!audioUrl) return;
+
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current = null;
+        }
+
+        if (playingReportId === reportId) {
+            setPlayingReportId(null);
+            return;
+        }
+
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+        setPlayingReportId(reportId);
+        audio.addEventListener("ended", () => setPlayingReportId(null));
+        audio.addEventListener("error", () => setPlayingReportId(null));
+        audio.play().catch(() => setPlayingReportId(null));
+    };
+
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, []);
 
     useEffect(() => {
         fetchReports();
@@ -205,9 +305,9 @@ export default function SentenceReportsPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            {visibleColumns.user_id && (
-                                <th onClick={() => handleSort('user_id')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                                    User ID {sortField === 'user_id' && (sortOrder === 'asc' ? '↑' : '↓')}
+                            {visibleColumns.user && (
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    User
                                 </th>
                             )}
                             {visibleColumns.word && (
@@ -245,15 +345,28 @@ export default function SentenceReportsPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {reports.map((report) => (
                             <tr key={report.id}>
-                                {visibleColumns.user_id && (
-                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-mono">
-                                        {report.user_id || 'N/A'}
+                                {visibleColumns.user && (
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {report.user_id ? (
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-800">{usersById[report.user_id]?.email || 'Unknown email'}</span>
+                                                <span className="text-xs text-gray-500">{usersById[report.user_id]?.timezone || 'No timezone'}</span>
+                                                <span className="text-xs text-gray-400 font-mono mt-1">ID: {report.user_id}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400">N/A</span>
+                                        )}
                                     </td>
                                 )}
                                 {visibleColumns.word && (
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex flex-col">
                                             <span className="text-lg font-bold text-gray-900">{report.character_content}</span>
+                                            {report.characters?.romanization && (
+                                                <span className="text-xs italic text-gray-600">
+                                                    {report.characters.romanization}
+                                                </span>
+                                            )}
                                             {report.characters?.meaning && (
                                                 <span className="text-xs text-gray-500 max-w-[150px] truncate" title={report.characters.meaning}>
                                                     {report.characters.meaning}
@@ -275,7 +388,34 @@ export default function SentenceReportsPage() {
                                 {visibleColumns.sentence && (
                                     <td className="px-6 py-4 text-sm text-gray-500 max-w-[400px]">
                                         <div className="space-y-1">
-                                            <div className="font-semibold text-gray-800">{report.sentence_korean}</div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-semibold text-gray-800">{report.sentence_korean}</span>
+                                                {(() => {
+                                                    const audioUrl = audioByKorean[report.sentence_korean];
+                                                    return (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handlePlayAudio(report.id, audioUrl)}
+                                                            disabled={!audioUrl}
+                                                            title={audioUrl ? "Play audio" : "No audio available"}
+                                                            className="shrink-0 px-1.5 py-1 rounded-md border bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                                                        >
+                                                            {playingReportId === report.id ? (
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-gray-700">
+                                                                    <path d="M5.5 3.5A1.5 1.5 0 017 5v10a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5zM13 3.5A1.5 1.5 0 0114.5 5v10a1.5 1.5 0 01-3 0V5A1.5 1.5 0 0113 3.5z" />
+                                                                </svg>
+                                                            ) : (
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-gray-700">
+                                                                    <path d="M6.3 2.84A1 1 0 004.8 3.7v12.6a1 1 0 001.5.86l11-6.3a1 1 0 000-1.72l-11-6.3z" />
+                                                                </svg>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })()}
+                                            </div>
+                                            {romanizationByKorean[report.sentence_korean] && (
+                                                <div className="italic text-gray-600">{romanizationByKorean[report.sentence_korean]}</div>
+                                            )}
                                             <div className="text-gray-500">{report.sentence_english}</div>
                                         </div>
                                     </td>
