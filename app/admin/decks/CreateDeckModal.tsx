@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 type SearchResult = {
     id: number;
     character: string;
-    romanization: string | null;
     meaning: string | null;
     category: string | null;
 };
@@ -51,8 +50,8 @@ export default function CreateDeckModal({ open, onClose, onCreated }: Props) {
             const q = charSearch.trim();
             const { data, error: qerr } = await supabase
                 .from("characters")
-                .select("id, character, romanization, meaning, category")
-                .or(`character.ilike.%${q}%,romanization.ilike.%${q}%,meaning.ilike.%${q}%`)
+                .select("id, character, meaning, category")
+                .or(`character.ilike.%${q}%,meaning.ilike.%${q}%`)
                 .order("id", { ascending: true })
                 .limit(50);
             if (qerr) throw new Error(qerr.message);
@@ -182,7 +181,7 @@ export default function CreateDeckModal({ open, onClose, onCreated }: Props) {
                                 type="text"
                                 value={charSearch}
                                 onChange={(e) => setCharSearch(e.target.value)}
-                                placeholder="Search by character, romanization, or meaning"
+                                placeholder="Search by word or meaning"
                                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                             />
                             <button
@@ -211,8 +210,7 @@ export default function CreateDeckModal({ open, onClose, onCreated }: Props) {
                                                 readOnly
                                                 className="pointer-events-none"
                                             />
-                                            <span className="text-lg font-medium text-gray-900 w-16">{r.character}</span>
-                                            <span className="text-xs text-gray-500 italic w-32 truncate">{r.romanization || "—"}</span>
+                                            <span className="text-lg font-medium text-gray-900 w-32">{r.character}</span>
                                             <span className="text-xs text-gray-700 flex-1 truncate">{r.meaning || "—"}</span>
                                             {r.category && (
                                                 <span className="text-[10px] text-orange-700 bg-orange-100 px-1.5 py-0.5 rounded">

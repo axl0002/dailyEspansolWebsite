@@ -4,11 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 function bucketLabel(bucketKey: string): string {
-    // "1-early" → "TOPIK 1 easy", "1-late" → "TOPIK 1 hard", etc.
     const match = bucketKey.match(/^(\d+)-(early|late)$/);
     if (!match) return bucketKey;
     const [, level, phase] = match;
-    return `TOPIK ${level} ${phase === 'early' ? 'easy' : 'hard'}`;
+    return `CEFR ${level} ${phase === 'early' ? 'easy' : 'hard'}`;
 }
 
 type Paragraph = {
@@ -18,8 +17,7 @@ type Paragraph = {
     variant: number;
     topic: string | null;
     title: string | null;
-    korean: string | null;
-    romanization: string | null;
+    spanish: string | null;
     english: string | null;
     audio_url: string | null;
     status: string | null;
@@ -62,7 +60,7 @@ export default function ParagraphsPage() {
         try {
             let query = supabase
                 .from("daily_paragraphs")
-                .select("id, bucket_key, paragraph_date, variant, topic, title, korean, romanization, english, audio_url, status, model, created_at")
+                .select("id, bucket_key, paragraph_date, variant, topic, title, spanish, english, audio_url, status, model, created_at")
                 .order("paragraph_date", { ascending: false })
                 .order("bucket_key", { ascending: true })
                 .order("variant", { ascending: true })
@@ -87,7 +85,7 @@ export default function ParagraphsPage() {
         <div>
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900">Paragraphs</h1>
-                <p className="text-gray-600 mt-1">Review daily paragraphs — check Korean, romanization, and English translations.</p>
+                <p className="text-gray-600 mt-1">Review daily paragraphs, check Spanish and English translations.</p>
             </div>
 
             <div className="mb-6 flex flex-wrap gap-3 items-end">
@@ -182,12 +180,8 @@ function ParagraphCard({ p }: { p: Paragraph }) {
 
             <div className="space-y-3">
                 <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Korean</div>
-                    <p className="text-lg text-gray-900 leading-relaxed">{p.korean || <span className="text-red-500">MISSING</span>}</p>
-                </div>
-                <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Romanization</div>
-                    <p className="text-sm text-gray-700 italic leading-relaxed">{p.romanization || <span className="text-red-500">MISSING</span>}</p>
+                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Spanish</div>
+                    <p className="text-lg text-gray-900 leading-relaxed">{p.spanish || <span className="text-red-500">MISSING</span>}</p>
                 </div>
                 <div>
                     <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">English</div>

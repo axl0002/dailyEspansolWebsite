@@ -5,8 +5,7 @@ import { supabase } from "@/lib/supabase";
 
 export type ExampleSentence = {
     id?: number;
-    korean: string;
-    romanization: string;
+    spanish: string;
     english: string;
     audio_url?: string | null;
 };
@@ -14,10 +13,9 @@ export type ExampleSentence = {
 export type Character = {
     id: string;
     character: string;
-    romanization: string;
     meaning: string;
     freq_rank: number;
-    topik_level: number;
+    cefr_level: number;
     category: string;
     visible: boolean;
 };
@@ -94,15 +92,12 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
             try {
                 const { data, error } = await supabase
                     .from("example_sentences")
-                    .select("id, korean, romanization, english, audio_url")
+                    .select("id, spanish, english, audio_url")
                     .eq("character_id", character.id)
                     .order("id");
 
                 if (error) throw error;
-                const loaded: ExampleSentence[] = (data || []).map(s => ({
-                    ...s,
-                    romanization: s.romanization ?? "",
-                }));
+                const loaded: ExampleSentence[] = data || [];
                 setSentences(loaded);
                 const originals = new Map<number, ExampleSentence>();
                 for (const s of loaded) {
@@ -128,7 +123,7 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
     };
 
     const handleAddSentence = () => {
-        setSentences(prev => [...prev, { korean: "", romanization: "", english: "" }]);
+        setSentences(prev => [...prev, { spanish: "", english: "" }]);
     };
 
     const handleRemoveSentence = (index: number) => {
@@ -145,9 +140,8 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
                 .update({
                     meaning: editingCharacter.meaning,
                     character: editingCharacter.character,
-                    romanization: editingCharacter.romanization,
                     freq_rank: editingCharacter.freq_rank,
-                    topik_level: editingCharacter.topik_level,
+                    cefr_level: editingCharacter.cefr_level,
                     category: editingCharacter.category,
                     visible: editingCharacter.visible,
                 })
@@ -179,8 +173,7 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
                 .filter(s => s.id === undefined)
                 .map(s => ({
                     character_id: editingCharacter.id,
-                    korean: s.korean,
-                    romanization: s.romanization,
+                    spanish: s.spanish,
                     english: s.english,
                 }));
             if (toInsert.length > 0) {
@@ -198,16 +191,14 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
                 if (s.id === undefined) continue;
                 const original = originalSentences.get(s.id);
                 if (original
-                    && original.korean === s.korean
-                    && original.romanization === s.romanization
+                    && original.spanish === s.spanish
                     && original.english === s.english
                 ) continue;
 
                 const { data: updData, error: updError } = await supabase
                     .from("example_sentences")
                     .update({
-                        korean: s.korean,
-                        romanization: s.romanization,
+                        spanish: s.spanish,
                         english: s.english,
                     })
                     .eq("id", s.id)
@@ -241,25 +232,14 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Word</label>
-                                <input
-                                    type="text"
-                                    value={editingCharacter.character}
-                                    onChange={(e) => setEditingCharacter({ ...editingCharacter, character: e.target.value })}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Romanization</label>
-                                <input
-                                    type="text"
-                                    value={editingCharacter.romanization ?? ""}
-                                    onChange={(e) => setEditingCharacter({ ...editingCharacter, romanization: e.target.value })}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Word</label>
+                            <input
+                                type="text"
+                                value={editingCharacter.character}
+                                onChange={(e) => setEditingCharacter({ ...editingCharacter, character: e.target.value })}
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            />
                         </div>
 
                         <div>
@@ -274,11 +254,11 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">TOPIK</label>
+                                <label className="block text-sm font-medium text-gray-700">CEFR</label>
                                 <input
                                     type="number"
-                                    value={editingCharacter.topik_level}
-                                    onChange={(e) => setEditingCharacter({ ...editingCharacter, topik_level: parseInt(e.target.value) })}
+                                    value={editingCharacter.cefr_level}
+                                    onChange={(e) => setEditingCharacter({ ...editingCharacter, cefr_level: parseInt(e.target.value) })}
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                                 />
                             </div>
@@ -360,14 +340,14 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
 
                                         <div className="space-y-3">
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">Korean</label>
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">Spanish</label>
                                                 <div className="flex gap-2">
                                                     <input
                                                         type="text"
-                                                        value={sentence.korean}
-                                                        onChange={(e) => handleSentenceChange(index, "korean", e.target.value)}
+                                                        value={sentence.spanish}
+                                                        onChange={(e) => handleSentenceChange(index, "spanish", e.target.value)}
                                                         className="block w-full border-gray-300 rounded-md shadow-sm p-1.5 text-sm border focus:ring-black focus:border-black"
-                                                        placeholder="한국어..."
+                                                        placeholder="Español..."
                                                     />
                                                     <button
                                                         type="button"
@@ -387,16 +367,6 @@ export default function CharacterEditModal({ character, onClose, onSave }: Chara
                                                         )}
                                                     </button>
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">Romanization</label>
-                                                <input
-                                                    type="text"
-                                                    value={sentence.romanization ?? ""}
-                                                    onChange={(e) => handleSentenceChange(index, "romanization", e.target.value)}
-                                                    className="block w-full border-gray-300 rounded-md shadow-sm p-1.5 text-sm border focus:ring-black focus:border-black"
-                                                    placeholder="Romanization..."
-                                                />
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-500 mb-1">English</label>

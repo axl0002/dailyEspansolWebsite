@@ -11,15 +11,14 @@ type ChartData = {
     total: number;
 };
 
-export default function TopikLevelChart({ filter }: { filter?: 'all' | 'true' | 'false' }) {
+export default function CefrLevelChart({ filter }: { filter?: 'all' | 'true' | 'false' }) {
     const [data, setData] = useState<ChartData[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            // Fetch ALL profiles with pagination
-            let allProfiles: { topik_level: number | string | null; is_pro: boolean | null }[] = [];
+            let allProfiles: { cefr_level: number | string | null; is_pro: boolean | null }[] = [];
             let page = 0;
             const pageSize = 1000;
             let hasMore = true;
@@ -30,7 +29,7 @@ export default function TopikLevelChart({ filter }: { filter?: 'all' | 'true' | 
 
                 let query = supabase
                     .from('profiles')
-                    .select('topik_level, is_pro')
+                    .select('cefr_level, is_pro')
                     .eq('is_beta', false)
                     .order('id', { ascending: true })
                     .range(from, to);
@@ -60,7 +59,6 @@ export default function TopikLevelChart({ filter }: { filter?: 'all' | 'true' | 
 
                 page++;
 
-                // Safety break
                 if (allProfiles.length > 50000) {
                     hasMore = false;
                 }
@@ -68,13 +66,12 @@ export default function TopikLevelChart({ filter }: { filter?: 'all' | 'true' | 
 
             const profiles = allProfiles;
 
-            // Process data
             const levelCounts: Record<string, { pro: number; free: number }> = {};
 
-            profiles?.forEach((profile: { topik_level: number | string | null; is_pro: boolean | null }) => {
-                const level = profile.topik_level;
+            profiles?.forEach((profile: { cefr_level: number | string | null; is_pro: boolean | null }) => {
+                const level = profile.cefr_level;
                 if (level !== null && level !== undefined) {
-                    const key = `TOPIK ${level}`;
+                    const key = `CEFR ${level}`;
                     if (!levelCounts[key]) {
                         levelCounts[key] = { pro: 0, free: 0 };
                     }
@@ -87,7 +84,6 @@ export default function TopikLevelChart({ filter }: { filter?: 'all' | 'true' | 
                 }
             });
 
-            // Convert to array and sort by name (HSK 1, HSK 2, etc.)
             const chartData = Object.entries(levelCounts)
                 .map(([name, counts]) => ({
                     name,
@@ -112,14 +108,14 @@ export default function TopikLevelChart({ filter }: { filter?: 'all' | 'true' | 
 
     if (data.length === 0) return (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center h-[300px]">
-            <p className="text-gray-500 font-medium">No TOPIK level data available</p>
+            <p className="text-gray-500 font-medium">No CEFR level data available</p>
             <p className="text-sm text-gray-400 mt-1">User levels will appear here.</p>
         </div>
     );
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold mb-6 text-gray-900">User TOPIK Levels</h3>
+            <h3 className="text-lg font-bold mb-6 text-gray-900">User CEFR Levels</h3>
             <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -178,8 +174,8 @@ export default function TopikLevelChart({ filter }: { filter?: 'all' | 'true' | 
                             }}
                         />
                         <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                        <Bar dataKey="pro" name="Pro Users" stackId="hsk" fill="#6366F1" radius={[0, 0, 4, 4]} barSize={24} />
-                        <Bar dataKey="free" name="Free Users" stackId="hsk" fill="#CBD5E1" radius={[4, 4, 0, 0]} barSize={24} />
+                        <Bar dataKey="pro" name="Pro Users" stackId="cefr" fill="#6366F1" radius={[0, 0, 4, 4]} barSize={24} />
+                        <Bar dataKey="free" name="Free Users" stackId="cefr" fill="#CBD5E1" radius={[4, 4, 0, 0]} barSize={24} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

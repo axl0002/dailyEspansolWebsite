@@ -16,14 +16,13 @@ type Category = {
 type Character = {
     id: number;
     character: string;
-    romanization: string | null;
     meaning: string | null;
-    topik_level: number | null;
+    cefr_level: number | null;
     freq_rank: number | null;
     visible: boolean;
 };
 
-type SortField = 'id' | 'character' | 'topik_level' | 'freq_rank';
+type SortField = 'id' | 'character' | 'cefr_level' | 'freq_rank';
 type SortOrder = 'asc' | 'desc';
 
 export default function DeckDetailPage() {
@@ -58,7 +57,7 @@ export default function DeckDetailPage() {
 
             const { data: chars, error: charErr } = await supabase
                 .from("characters")
-                .select("id, character, romanization, meaning, topik_level, freq_rank, visible")
+                .select("id, character, meaning, cefr_level, freq_rank, visible")
                 .eq("category", catData.name)
                 .order(sortField, { ascending: sortOrder === 'asc', nullsFirst: false })
                 .limit(2000);
@@ -159,10 +158,9 @@ export default function DeckDetailPage() {
                                 <th onClick={() => handleSort('character')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
                                     Character{sortIndicator('character')}
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Romanization</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meaning</th>
-                                <th onClick={() => handleSort('topik_level')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
-                                    TOPIK{sortIndicator('topik_level')}
+                                <th onClick={() => handleSort('cefr_level')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
+                                    CEFR{sortIndicator('cefr_level')}
                                 </th>
                                 <th onClick={() => handleSort('freq_rank')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100">
                                     Freq{sortIndicator('freq_rank')}
@@ -176,9 +174,8 @@ export default function DeckDetailPage() {
                                 <tr key={c.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 font-mono">{c.id}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-xl text-gray-900">{c.character}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 italic">{c.romanization || "—"}</td>
                                     <td className="px-6 py-4 text-sm text-gray-700">{c.meaning || "—"}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.topik_level ?? "—"}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.cefr_level ?? "—"}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{c.freq_rank ?? "—"}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.visible ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
@@ -198,7 +195,7 @@ export default function DeckDetailPage() {
                             ))}
                             {characters.length === 0 && (
                                 <tr>
-                                    <td colSpan={8} className="px-6 py-8 text-center text-sm text-gray-500">
+                                    <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500">
                                         No characters in this deck.
                                     </td>
                                 </tr>

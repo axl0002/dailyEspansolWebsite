@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 type SearchResult = {
     id: number;
     character: string;
-    romanization: string | null;
     meaning: string | null;
     category: string | null;
 };
@@ -44,8 +43,8 @@ export default function AddCharactersModal({ open, onClose, onAdded, categoryNam
             const q = query.trim();
             const { data, error: qerr } = await supabase
                 .from("characters")
-                .select("id, character, romanization, meaning, category")
-                .or(`character.ilike.%${q}%,romanization.ilike.%${q}%,meaning.ilike.%${q}%`)
+                .select("id, character, meaning, category")
+                .or(`character.ilike.%${q}%,meaning.ilike.%${q}%`)
                 .order("id", { ascending: true })
                 .limit(50);
             if (qerr) throw new Error(qerr.message);
@@ -111,7 +110,7 @@ export default function AddCharactersModal({ open, onClose, onAdded, categoryNam
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search by character, romanization, or meaning"
+                            placeholder="Search by word or meaning"
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                         />
                         <button
@@ -142,8 +141,7 @@ export default function AddCharactersModal({ open, onClose, onAdded, categoryNam
                                             readOnly
                                             className="pointer-events-none"
                                         />
-                                        <span className="text-lg font-medium text-gray-900 w-16">{r.character}</span>
-                                        <span className="text-xs text-gray-500 italic w-32 truncate">{r.romanization || "—"}</span>
+                                        <span className="text-lg font-medium text-gray-900 w-32">{r.character}</span>
                                         <span className="text-xs text-gray-700 flex-1 truncate">{r.meaning || "—"}</span>
                                         {alreadyHere ? (
                                             <span className="text-[10px] text-green-700 bg-green-100 px-1.5 py-0.5 rounded">already in deck</span>
