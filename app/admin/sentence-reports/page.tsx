@@ -10,12 +10,11 @@ type SentenceReport = {
     user_id: string;
     character_id: number | null;
     character_content: string;
-    sentence_korean: string;
+    sentence_spanish: string;
     sentence_english: string | null;
     issue_type: string;
     characters: {
         meaning: string | null;
-        romanization: string | null;
         category: string | null;
     } | null;
 };
@@ -54,8 +53,7 @@ export default function SentenceReportsPage() {
     const [showModal, setShowModal] = useState(false);
 
     // Audio playback
-    const [audioByKorean, setAudioByKorean] = useState<Record<string, string | null>>({});
-    const [romanizationByKorean, setRomanizationByKorean] = useState<Record<string, string | null>>({});
+    const [audioBySpanish, setAudioBySpanish] = useState<Record<string, string | null>>({});
     const [playingReportId, setPlayingReportId] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -64,7 +62,7 @@ export default function SentenceReportsPage() {
         try {
             let query = supabase
                 .from("sentence_reports")
-                .select("*, characters(meaning, romanization, category)");
+                .select("*, characters(meaning, category)");
 
             if (sortField) {
                 query = query.order(sortField, { ascending: sortOrder === 'asc' });
@@ -79,35 +77,31 @@ export default function SentenceReportsPage() {
             const loadedReports = data || [];
             setReports(loadedReports);
 
-            const uniqueKorean = Array.from(
+            const uniqueSpanish = Array.from(
                 new Set(
                     loadedReports
-                        .map((r: SentenceReport) => r.sentence_korean)
+                        .map((r: SentenceReport) => r.sentence_spanish)
                         .filter((s: string | null | undefined): s is string => !!s)
                 )
             );
 
-            if (uniqueKorean.length > 0) {
+            if (uniqueSpanish.length > 0) {
                 const { data: sentenceData, error: sentenceError } = await supabase
                     .from("example_sentences")
-                    .select("korean, romanization, audio_url")
-                    .in("korean", uniqueKorean);
+                    .select("spanish, audio_url")
+                    .in("spanish", uniqueSpanish);
 
                 if (sentenceError) throw sentenceError;
 
                 const audioMap: Record<string, string | null> = {};
-                const romanMap: Record<string, string | null> = {};
                 for (const s of sentenceData || []) {
-                    if (s.korean) {
-                        audioMap[s.korean] = s.audio_url ?? null;
-                        romanMap[s.korean] = s.romanization ?? null;
+                    if (s.spanish) {
+                        audioMap[s.spanish] = s.audio_url ?? null;
                     }
                 }
-                setAudioByKorean(audioMap);
-                setRomanizationByKorean(romanMap);
+                setAudioBySpanish(audioMap);
             } else {
-                setAudioByKorean({});
-                setRomanizationByKorean({});
+                setAudioBySpanish({});
             }
 
             const userIds = Array.from(
@@ -362,11 +356,6 @@ export default function SentenceReportsPage() {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex flex-col">
                                             <span className="text-lg font-bold text-gray-900">{report.character_content}</span>
-                                            {report.characters?.romanization && (
-                                                <span className="text-xs italic text-gray-600">
-                                                    {report.characters.romanization}
-                                                </span>
-                                            )}
                                             {report.characters?.meaning && (
                                                 <span className="text-xs text-gray-500 max-w-[150px] truncate" title={report.characters.meaning}>
                                                     {report.characters.meaning}
@@ -389,9 +378,9 @@ export default function SentenceReportsPage() {
                                     <td className="px-6 py-4 text-sm text-gray-500 max-w-[400px]">
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-semibold text-gray-800">{report.sentence_korean}</span>
+                                                <span className="font-semibold text-gray-800">{report.sentence_spanish}</span>
                                                 {(() => {
-                                                    const audioUrl = audioByKorean[report.sentence_korean];
+                                                    const audioUrl = audioBySpanish[report.sentence_spanish];
                                                     return (
                                                         <button
                                                             type="button"
@@ -413,9 +402,6 @@ export default function SentenceReportsPage() {
                                                     );
                                                 })()}
                                             </div>
-                                            {romanizationByKorean[report.sentence_korean] && (
-                                                <div className="italic text-gray-600">{romanizationByKorean[report.sentence_korean]}</div>
-                                            )}
                                             <div className="text-gray-500">{report.sentence_english}</div>
                                         </div>
                                     </td>
