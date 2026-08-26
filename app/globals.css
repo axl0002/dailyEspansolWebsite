@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  /* Warm light background */
-  --background: #FBF5F0;
-  /* Dark warm foreground for contrast */
+  /* Warm light background (app-icon cream) */
+  --background: #FEF5EE;
+  /* Dark foreground for contrast */
   --foreground: #2B1A0F;
 
-  /* Orange - Primary */
-  --primary: #E57134;
-  /* Light Orange - Secondary */
-  --secondary: #F5D2BB;
-  /* Very Light Orange - Accent/Surface */
-  --accent: #FCEADD;
+  /* Gold - Primary (long-logo accent) */
+  --primary: #FFBD5A;
+  /* Light Gold - Secondary */
+  --secondary: #FFE5BD;
+  /* Very Light Gold - Accent/Surface */
+  --accent: #FFF5E6;
 }
 
 @theme inline {
