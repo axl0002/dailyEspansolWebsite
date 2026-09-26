@@ -1,141 +1,40 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { supabase } from '@/lib/supabase';
+import { useProfilesCache, pivotDist, type ProFilter } from './useProfilesCache';
+import { ChartLoading, ChartError, ChartEmpty } from './ChartMessage';
 
-type ChartData = {
-    name: string;
-    pro: number;
-    free: number;
-    total: number;
-};
+type ChartData = { name: string; pro: number; free: number; total: number };
 
-export default function CefrLevelChart({ filter }: { filter?: 'all' | 'true' | 'false' }) {
-    const [data, setData] = useState<ChartData[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function CefrLevelChart({ filter = 'all' }: { filter?: ProFilter; dateRange?: unknown }) {
+    const { distributions, loading, error, retry } = useProfilesCache();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            let allProfiles: { cefr_level: number | string | null; is_pro: boolean | null }[] = [];
-            let page = 0;
-            const pageSize = 1000;
-            let hasMore = true;
+    const data: ChartData[] = useMemo(() => {
+        const rows = pivotDist(distributions?.cefr_level, {
+            keyLabel: (k) => `CEFR ${k}`,
+        });
+        // Sort by CEFR number
+        return rows.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    }, [distributions]);
 
-            while (hasMore) {
-                const from = page * pageSize;
-                const to = from + pageSize - 1;
+    const poolTotal = useMemo(() => {
+        return data.reduce((s, r) => s + (filter === 'true' ? r.pro : filter === 'false' ? r.free : r.total), 0);
+    }, [data, filter]);
 
-                let query = supabase
-                    .from('profiles')
-                    .select('cefr_level, is_pro')
-                    .eq('is_beta', false)
-                    .order('id', { ascending: true })
-                    .range(from, to);
-
-                if (filter === 'true') {
-                    query = query.eq('is_pro', true);
-                } else if (filter === 'false') {
-                    query = query.eq('is_pro', false);
-                }
-
-                const { data: batch, error } = await query;
-
-                if (error) {
-                    console.error('Error fetching profiles:', error);
-                    setLoading(false);
-                    return;
-                }
-
-                if (batch && batch.length > 0) {
-                    allProfiles = [...allProfiles, ...batch];
-                    if (batch.length < pageSize) {
-                        hasMore = false;
-                    }
-                } else {
-                    hasMore = false;
-                }
-
-                page++;
-
-                if (allProfiles.length > 50000) {
-                    hasMore = false;
-                }
-            }
-
-            const profiles = allProfiles;
-
-            const levelCounts: Record<string, { pro: number; free: number }> = {};
-
-            profiles?.forEach((profile: { cefr_level: number | string | null; is_pro: boolean | null }) => {
-                const level = profile.cefr_level;
-                if (level !== null && level !== undefined) {
-                    const key = `CEFR ${level}`;
-                    if (!levelCounts[key]) {
-                        levelCounts[key] = { pro: 0, free: 0 };
-                    }
-
-                    if (profile.is_pro) {
-                        levelCounts[key].pro++;
-                    } else {
-                        levelCounts[key].free++;
-                    }
-                }
-            });
-
-            const chartData = Object.entries(levelCounts)
-                .map(([name, counts]) => ({
-                    name,
-                    pro: counts.pro,
-                    free: counts.free,
-                    total: counts.pro + counts.free
-                }))
-                .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-
-            setData(chartData);
-            setLoading(false);
-        };
-
-        fetchData();
-    }, [filter]);
-
-    if (loading) return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex items-center justify-center h-[300px]">
-            <span className="text-gray-400">Loading chart data...</span>
-        </div>
-    );
-
-    if (data.length === 0) return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center h-[300px]">
-            <p className="text-gray-500 font-medium">No CEFR level data available</p>
-            <p className="text-sm text-gray-400 mt-1">User levels will appear here.</p>
-        </div>
-    );
+    if (loading) return <ChartLoading />;
+    if (error) return <ChartError title="CEFR Level" error={error} onRetry={retry} />;
+    if (data.length === 0) return <ChartEmpty title="No CEFR Level data available" />;
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold mb-6 text-gray-900">User CEFR Levels</h3>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 md:col-span-2 lg:col-span-1">
+            <h3 className="text-lg font-bold mb-6 text-gray-900">CEFR Level</h3>
             <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                        data={data}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="#f0f0f0" />
-                        <XAxis
-                            dataKey="name"
-                            tick={{ fontSize: 12, fill: '#6B7280' }}
-                            tickLine={false}
-                            axisLine={false}
-                        />
-                        <YAxis
-                            width={30}
-                            tick={{ fontSize: 12, fill: '#6B7280' }}
-                            tickLine={false}
-                            axisLine={false}
-                            allowDecimals={false}
-                        />
+                    <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={false} />
+                        <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={false} />
                         <Tooltip
                             cursor={{ fill: '#F9FAFB' }}
                             content={({ active, payload, label }) => {
@@ -147,23 +46,16 @@ export default function CefrLevelChart({ filter }: { filter?: 'all' | 'true' | '
                                                 const isPro = entry.name === 'Pro Users';
                                                 const colorClass = isPro ? 'text-indigo-600' : 'text-gray-700';
                                                 const value = entry.value as number;
-                                                const total = (entry.payload as { total: number }).total;
-                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
-
+                                                const bucketTotal = (entry.payload as { total: number }).total;
+                                                const denominator = filter === 'all' ? bucketTotal : poolTotal;
+                                                const percentage = denominator > 0 ? ((value / denominator) * 100).toFixed(1) : '0.0';
                                                 return (
                                                     <div key={index} className="flex items-center justify-between gap-4 mb-1">
                                                         <div className="flex items-center gap-2">
-                                                            <div
-                                                                className="w-2 h-2 rounded-full"
-                                                                style={{ backgroundColor: entry.color }}
-                                                            />
-                                                            <span className={`text-sm font-medium ${colorClass}`}>
-                                                                {entry.name}
-                                                            </span>
+                                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                                            <span className={`text-sm font-medium ${colorClass}`}>{entry.name}</span>
                                                         </div>
-                                                        <span className={`text-sm font-bold ${colorClass}`}>
-                                                            {value} ({percentage}%)
-                                                        </span>
+                                                        <span className={`text-sm font-bold ${colorClass}`}>{value} ({percentage}%)</span>
                                                     </div>
                                                 );
                                             })}
@@ -174,8 +66,8 @@ export default function CefrLevelChart({ filter }: { filter?: 'all' | 'true' | '
                             }}
                         />
                         <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                        <Bar dataKey="pro" name="Pro Users" stackId="cefr" fill="#6366F1" radius={[0, 0, 4, 4]} barSize={24} />
-                        <Bar dataKey="free" name="Free Users" stackId="cefr" fill="#CBD5E1" radius={[4, 4, 0, 0]} barSize={24} />
+                        <Bar dataKey="pro" name="Pro Users" stackId="users" fill="#6366F1" radius={[0, 0, 4, 4]} barSize={32} />
+                        <Bar dataKey="free" name="Free Users" stackId="users" fill="#CBD5E1" radius={[4, 4, 0, 0]} barSize={32} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

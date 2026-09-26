@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { supabase } from '@/lib/supabase';
+import { useProfilesCache, pivotDist, type ProFilter } from './useProfilesCache';
+import { ChartLoading, ChartError, ChartEmpty } from './ChartMessage';
 
 type ChartData = {
     name: string;
@@ -11,132 +12,37 @@ type ChartData = {
     total: number;
 };
 
-export default function CategoryChart({ filter }: { filter?: 'all' | 'true' | 'false' }) {
-    const [data, setData] = useState<ChartData[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function CategoryChart({ filter = 'all' }: { filter?: ProFilter; dateRange?: unknown }) {
+    const { distributions, loading, error, retry } = useProfilesCache();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            // Fetch ALL profiles with pagination
-            let allProfiles: { selected_categories: string[] | string | null; is_pro: boolean | null }[] = [];
-            let page = 0;
-            const pageSize = 1000;
-            let hasMore = true;
+    const data: ChartData[] = useMemo(() => {
+        // Server already unnested selected_categories, so this is a flat list.
+        const rows = pivotDist(distributions?.category);
+        return rows.filter(r => r.name);
+    }, [distributions]);
 
-            while (hasMore) {
-                const from = page * pageSize;
-                const to = from + pageSize - 1;
+    const poolTotal = useMemo(() => {
+        return data.reduce((s, r) => {
+            return s + (filter === 'true' ? r.pro : filter === 'false' ? r.free : r.total);
+        }, 0);
+    }, [data, filter]);
 
-                let query = supabase
-                    .from('profiles')
-                    .select('selected_categories, is_pro')
-                    .eq('is_beta', false)
-                    .order('id', { ascending: true })
-                    .range(from, to);
+    // ~28px per row + fixed footer for legend/axis. Ensures every y-axis
+    // label stays visible with interval={0}. Floor of 300 keeps small
+    // filtered results from looking cramped.
+    const chartHeight = Math.max(300, data.length * 28 + 60);
 
-                if (filter === 'true') {
-                    query = query.eq('is_pro', true);
-                } else if (filter === 'false') {
-                    query = query.eq('is_pro', false);
-                }
-
-                const { data: batch, error } = await query;
-
-                if (error) {
-                    console.error('Error fetching profiles:', error);
-                    setLoading(false);
-                    return;
-                }
-
-                if (batch && batch.length > 0) {
-                    allProfiles = [...allProfiles, ...batch];
-                    if (batch.length < pageSize) {
-                        hasMore = false;
-                    }
-                } else {
-                    hasMore = false;
-                }
-
-                page++;
-
-                // Safety break
-                if (allProfiles.length > 50000) {
-                    hasMore = false;
-                }
-            }
-
-            const profiles = allProfiles;
-
-            // Process data
-            const categoryCounts: Record<string, { pro: number; free: number }> = {};
-
-            profiles?.forEach((profile: { selected_categories: string[] | string | null; is_pro: boolean | null }) => {
-                const categories = profile.selected_categories;
-
-                if (categories) {
-                    let catArray: string[] = [];
-
-                    if (Array.isArray(categories)) {
-                        catArray = categories;
-                    } else if (typeof categories === 'string') {
-                        // Handle comma-separated string just in case
-                        catArray = categories.split(',').map(s => s.trim());
-                    }
-
-                    catArray.forEach(cat => {
-                        if (cat) {
-                            const key = cat.trim();
-                            if (key) {
-                                if (!categoryCounts[key]) {
-                                    categoryCounts[key] = { pro: 0, free: 0 };
-                                }
-
-                                if (profile.is_pro) {
-                                    categoryCounts[key].pro++;
-                                } else {
-                                    categoryCounts[key].free++;
-                                }
-                            }
-                        }
-                    });
-                }
-            });
-
-            // Convert to array and sort by total descending
-            const chartData = Object.entries(categoryCounts)
-                .map(([name, counts]) => ({
-                    name,
-                    pro: counts.pro,
-                    free: counts.free,
-                    total: counts.pro + counts.free
-                }))
-                .sort((a, b) => b.total - a.total);
-
-            setData(chartData);
-            setLoading(false);
-        };
-
-        fetchData();
-    }, [filter]);
-
-    if (loading) return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex items-center justify-center h-[300px]">
-            <span className="text-gray-400">Loading chart data...</span>
-        </div>
-    );
-
-    if (data.length === 0) return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center h-[300px]">
-            <p className="text-gray-500 font-medium">No Category data available</p>
-            <p className="text-sm text-gray-400 mt-1">User interests will appear here.</p>
-        </div>
-    );
+    if (loading) return <ChartLoading />;
+    if (error) return <ChartError title="Selected Categories" error={error} onRetry={retry} />;
+    if (data.length === 0) return <ChartEmpty title="No Category data available" />;
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 md:col-span-2 lg:col-span-1">
-            <h3 className="text-lg font-bold mb-6 text-gray-900">Selected Categories</h3>
-            <div className="h-[500px] w-full">
+            <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Selected Categories</h3>
+                <p className="text-xs text-gray-500 mt-1">Users can pick multiple categories — percentages sum to more than 100%.</p>
+            </div>
+            <div className="w-full" style={{ height: chartHeight }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={data}
@@ -154,7 +60,7 @@ export default function CategoryChart({ filter }: { filter?: 'all' | 'true' | 'f
                         <YAxis
                             type="category"
                             dataKey="name"
-                            width={140}
+                            width={120}
                             tick={{ fontSize: 11, fill: '#6B7280' }}
                             tickLine={false}
                             axisLine={false}
@@ -171,8 +77,7 @@ export default function CategoryChart({ filter }: { filter?: 'all' | 'true' | 'f
                                                 const isPro = entry.name === 'Pro Users';
                                                 const colorClass = isPro ? 'text-indigo-600' : 'text-gray-700';
                                                 const value = entry.value as number;
-                                                const total = (entry.payload as { total: number }).total;
-                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+                                                const percentage = poolTotal > 0 ? ((value / poolTotal) * 100).toFixed(1) : '0.0';
 
                                                 return (
                                                     <div key={index} className="flex items-center justify-between gap-4 mb-1">

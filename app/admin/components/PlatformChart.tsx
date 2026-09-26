@@ -1,142 +1,43 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { supabase } from '@/lib/supabase';
+import { useProfilesCache, pivotDist, type ProFilter } from './useProfilesCache';
+import { ChartLoading, ChartError, ChartEmpty } from './ChartMessage';
 
-type ChartData = {
-    name: string;
-    pro: number;
-    free: number;
-    total: number;
-};
+type ChartData = { name: string; pro: number; free: number; total: number };
 
-export default function PlatformChart({ filter }: { filter?: 'all' | 'true' | 'false' }) {
-    const [data, setData] = useState<ChartData[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function PlatformChart({ filter = 'all' }: { filter?: ProFilter; dateRange?: unknown }) {
+    const { distributions, loading, error, retry } = useProfilesCache();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            let allProfiles: { platform: string | null; is_pro: boolean | null }[] = [];
-            let page = 0;
-            const pageSize = 1000;
-            let hasMore = true;
+    const data: ChartData[] = useMemo(() => {
+        const rows = pivotDist(distributions?.platform);
+        return rows.filter(r => r.name && r.name !== 'unknown');
+    }, [distributions]);
 
-            while (hasMore) {
-                const from = page * pageSize;
-                const to = from + pageSize - 1;
+    const poolTotal = useMemo(() => {
+        return data.reduce((s, r) => s + (filter === 'true' ? r.pro : filter === 'false' ? r.free : r.total), 0);
+    }, [data, filter]);
 
-                let query = supabase
-                    .from('profiles')
-                    .select('platform, is_pro')
-                    .eq('is_beta', false)
-                    .order('id', { ascending: true })
-                    .range(from, to);
-
-                if (filter === 'true') {
-                    query = query.eq('is_pro', true);
-                } else if (filter === 'false') {
-                    query = query.eq('is_pro', false);
-                }
-
-                const { data: batch, error } = await query;
-
-                if (error) {
-                    console.error('Error fetching profiles:', error);
-                    setLoading(false);
-                    return;
-                }
-
-                if (batch && batch.length > 0) {
-                    allProfiles = [...allProfiles, ...batch];
-                    if (batch.length < pageSize) {
-                        hasMore = false;
-                    }
-                } else {
-                    hasMore = false;
-                }
-
-                page++;
-
-                if (allProfiles.length > 50000) {
-                    hasMore = false;
-                }
-            }
-
-            const profiles = allProfiles;
-
-            const platformCounts: Record<string, { pro: number; free: number }> = {};
-
-            profiles?.forEach((profile) => {
-                if (profile.platform && typeof profile.platform === 'string') {
-                    const key = profile.platform.trim();
-                    if (!key) return;
-
-                    if (!platformCounts[key]) {
-                        platformCounts[key] = { pro: 0, free: 0 };
-                    }
-
-                    if (profile.is_pro) {
-                        platformCounts[key].pro++;
-                    } else {
-                        platformCounts[key].free++;
-                    }
-                }
-            });
-
-            const chartData = Object.entries(platformCounts)
-                .map(([name, counts]) => ({
-                    name,
-                    pro: counts.pro,
-                    free: counts.free,
-                    total: counts.pro + counts.free
-                }))
-                .sort((a, b) => b.total - a.total);
-
-            setData(chartData);
-            setLoading(false);
-        };
-
-        fetchData();
-    }, [filter]);
-
-    if (loading) return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex items-center justify-center h-[300px]">
-            <span className="text-gray-400">Loading chart data...</span>
-        </div>
-    );
-
-    if (data.length === 0) return (
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center h-[300px]">
-            <p className="text-gray-500 font-medium">No platform data available</p>
-            <p className="text-sm text-gray-400 mt-1">Platform data will appear here.</p>
-        </div>
-    );
+    if (loading) return <ChartLoading />;
+    if (error) return <ChartError title="Platform" error={error} onRetry={retry} />;
+    if (data.length === 0) return <ChartEmpty title="No Platform data available" />;
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 md:col-span-2 lg:col-span-1">
             <h3 className="text-lg font-bold mb-6 text-gray-900">Platform</h3>
             <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                        data={data}
-                        layout="vertical"
-                        margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0f0f0" />
+                    <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                         <XAxis
-                            type="number"
+                            dataKey="name"
                             tick={{ fontSize: 11, fill: '#6B7280' }}
                             tickLine={false}
                             axisLine={false}
-                            allowDecimals={false}
                         />
                         <YAxis
-                            type="category"
-                            dataKey="name"
-                            width={100}
-                            tick={{ fontSize: 12, fill: '#6B7280' }}
+                            tick={{ fontSize: 11, fill: '#6B7280' }}
                             tickLine={false}
                             axisLine={false}
                         />
@@ -151,8 +52,9 @@ export default function PlatformChart({ filter }: { filter?: 'all' | 'true' | 'f
                                                 const isPro = entry.name === 'Pro Users';
                                                 const colorClass = isPro ? 'text-indigo-600' : 'text-gray-700';
                                                 const value = entry.value as number;
-                                                const total = (entry.payload as { total: number }).total;
-                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+                                                const bucketTotal = (entry.payload as { total: number }).total;
+                                                const denominator = filter === 'all' ? bucketTotal : poolTotal;
+                                                const percentage = denominator > 0 ? ((value / denominator) * 100).toFixed(1) : '0.0';
 
                                                 return (
                                                     <div key={index} className="flex items-center justify-between gap-4 mb-1">
@@ -177,9 +79,9 @@ export default function PlatformChart({ filter }: { filter?: 'all' | 'true' | 'f
                                 return null;
                             }}
                         />
-                        <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                        <Bar dataKey="pro" name="Pro Users" stackId="platform" fill="#6366F1" radius={[0, 0, 4, 4]} barSize={24} />
-                        <Bar dataKey="free" name="Free Users" stackId="platform" fill="#CBD5E1" radius={[4, 4, 0, 0]} barSize={24} />
+                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                        <Bar dataKey="pro" name="Pro Users" stackId="users" fill="#6366F1" radius={[0, 0, 4, 4]} barSize={32} />
+                        <Bar dataKey="free" name="Free Users" stackId="users" fill="#CBD5E1" radius={[4, 4, 0, 0]} barSize={32} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
